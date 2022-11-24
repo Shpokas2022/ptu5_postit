@@ -14,7 +14,7 @@ class Post(models.Model):
         on_delete=models.CASCADE,
         related_name='post',
     )
-create_at = models.DateTimeField(_('created_at'),auto_now_add=True)
+    created_at = models.DateTimeField(_('created_at'), auto_now_add=True)
 
 def __str__(self):
     return _("{title} by {user} posted at {created_at}").format(
@@ -22,3 +22,6 @@ def __str__(self):
         user=self.user,
         created_at=self.created_at,
     )
+
+class Meta:
+    ordering = ('-created_at',)
