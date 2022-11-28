@@ -1,9 +1,12 @@
+from django.contrib.auth import get_user_model
 from django.shortcuts import render
 from rest_framework import generics, permissions, mixins, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from django.utils.translation import gettext_lazy as _
 from . import models, serializers
+
+User = get_user_model()
 
 class PostList(generics.ListCreateAPIView):
     queryset = models.Post.objects.all()
@@ -12,7 +15,7 @@ class PostList(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def perform_create(self, serializer):
-        serializer.safe(user=self.request.user)
+        serializer.save(user=self.request.user)
 
 class CommentList(generics.ListCreateAPIView):
     # queryset = models.Comment.objects.all()
@@ -93,5 +96,8 @@ class PostLikeCreate(generics.CreateAPIView, mixins.DestroyModelMixin):
         else:
             raise ValidationError(_('You do not like this post to begin with'))
 
-
+class UserCreate(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = serializers.UserSerializer
+    permission_classes = [permissions.AllowAny]
 
