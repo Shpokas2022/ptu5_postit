@@ -52,7 +52,14 @@ class Comment(models.Model):
             created_at=self.created_at
         )
 
+# Like-u lentele
 class PostLike(models.Model):
+    user = models.ForeignKey(
+        User,
+        verbose_name=_("user"),
+        on_delete=models.CASCADE,
+        related_name='post_likes',
+    )
     post = models.ForeignKey(
         Post,
         verbose_name=_('post'),

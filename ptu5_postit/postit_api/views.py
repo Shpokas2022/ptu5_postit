@@ -1,6 +1,7 @@
 from django.shortcuts import render
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, mixins, status
 from rest_framework.exceptions import ValidationError
+from rest_framework.response import Response
 from django.utils.translation import gettext_lazy as _
 from . import models, serializers
 
@@ -68,6 +69,29 @@ class CommentDetail(generics.RetrieveUpdateDestroyAPIView):
         else:
             raise ValidationError(_('You cannot change post not of your own.'))
 
-    
+class PostLikeCreate(generics.CreateAPIView, mixins.DestroyModelMixin):
+    serializer_class = serializers.PostLileSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        post = models.Post.objects.get(pk=self.kwargs['pk'])
+        return models.PostLike.objects.filter(user=user, post=post)
+
+    def perform_create(self, serializer):
+        if self.get_queryset().exists():
+            raise ValidationError(_('You cannot like post more, then once'))
+        user = self.request.user
+        post = models.Post.objects.get(pk=self.kwargs['pk'])
+        serializer.save(user=user, post=post)
+        
+        # formuojasi delete mygtukas
+    def delete (self, request, *args, **kwargs):
+        if self.get_queryset().exists():
+            self.get_queryset().delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            raise ValidationError(_('You do not like this post to begin with'))
+
 
 
